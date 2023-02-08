@@ -11,7 +11,7 @@ IMG_PATH = os.path.join(ABS_PATH, '../../../../../images/')
 
 def test_ocr_one_pic():
     reader = easyocr.Reader(['ch_sim', 'en'])
-    pic_path = os.path.join(IMG_PATH, 'chinese.jpg')
+    pic_path = os.path.join(IMG_PATH, 'WechatIMG300.png')
     result = ocr_one_pic(reader, pic_path)
     print(result)
     assert len(result) > 0
