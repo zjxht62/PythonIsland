@@ -10,3 +10,6 @@ reader = easyocr.Reader(['ch_sim', 'en'])
 pic_path = os.path.join(IMG_PATH, 'chinese.jpg')
 result = reader.readtext(pic_path)
 print(result)
+
+def ocr_one_pic(reader, pic_path):
+    return reader.readtext(pic_path)
