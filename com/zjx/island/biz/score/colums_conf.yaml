@@ -1,0 +1,5 @@
+columns:
+  - name: 编号
+    type: normal
+    conatins:
+      - 序号
