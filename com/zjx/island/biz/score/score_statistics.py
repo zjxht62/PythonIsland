@@ -1,6 +1,7 @@
 import openpyxl
 from yaml_util import get_all_from_columns, load_yaml
 
+RESULT_WORKBOOK_NAME='自动合分结果.xlsx'
 
 def get_all_rows_without_first(path):
     # 打开一个已存在的工作簿
@@ -37,7 +38,6 @@ def convert_to_target_column(origin_rows, column_mapping):
     result_rows = []
     # 添加表头
     result_rows.append(tuple([m['target'] for m in column_mapping]))
-    print(result_rows)
     head_line = origin_rows[0]
 
     for m in column_mapping:
@@ -63,7 +63,31 @@ def convert_to_target_column(origin_rows, column_mapping):
             else:
                 value = r[m['from_index'][0]]
             single_result_row_list.append(value)
-        print(single_result_row_list)
+        result_rows.append(tuple(single_result_row_list))
+    return result_rows
+
+
+def write_data_to_new_sheet(path):
+    # 创建一个新的工作簿
+    workbook = openpyxl.load_workbook(path)
+
+    # 创建一个新的工作表（sheet）
+    new_sheet = workbook.create_sheet(title='NewSheet')
+
+    # 示例数据
+    data = [
+        ['Name', 'Age', 'City'],
+        ['John', 25, 'New York'],
+        ['Alice', 30, 'London'],
+        ['Bob', 22, 'Tokyo']
+    ]
+
+    # 将数据写入新的工作表
+    for row_data in data:
+        new_sheet.append(row_data)
+
+    # 保存工作簿到文件
+    workbook.save('example.xlsx')
 
 # original_tuple = (1, 2, 3, 4, 5, 6)
 #
@@ -93,7 +117,28 @@ def convert_to_target_column(origin_rows, column_mapping):
 
 
 if __name__ == '__main__':
-    origin_rows = get_all_rows_without_first('初三期末(历史)-九年级1班.xlsx')
+    origin_rows = get_all_rows_without_first('../../../../../待处理分数统计表/初三期末(历史)-九年级1班.xlsx')
     selected_rows = select_need_column(origin_rows, get_all_from_columns())
-    print(selected_rows)
-    convert_to_target_column(selected_rows, load_yaml())
+    result_rows = convert_to_target_column(selected_rows, load_yaml())
+    # 按学号排序
+    sorted_list = sorted(result_rows, key=lambda x: x[0])
+    sorted_list.insert(0,sorted_list.pop())
+
+    for r in sorted_list:
+        print(r)
+
+    # 创建保存结果的工作表
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = '总合分结果'
+
+
+
+
+    # 示例数据
+    data = sorted_list
+
+    # 将数据写入新的工作表
+    for row_data in data:
+        sheet.append(row_data)
+    workbook.save(RESULT_WORKBOOK_NAME)
