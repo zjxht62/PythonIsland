@@ -1,5 +1,69 @@
-columns:
-  - name: 编号
-    type: normal
-    conatins:
-      - 序号
+- target: 编号
+  from:
+    - 班内学号
+
+- target: 姓名
+  from:
+    - 姓名
+
+- target: T1
+  from:
+    - 单选题
+
+- target: T2
+  from:
+    - 31(1)
+
+- target: T3
+  from:
+    - 31(2)
+
+- target: T4
+  from:
+    - 31(3)
+
+- target: T5
+  from:
+    - 31(4)
+
+- target: T6
+  from:
+    - 32(1)
+
+- target: T7
+  from:
+    - 32(2)
+
+- target: T8
+  from:
+    - 32(3)
+
+- target: T9
+  from:
+    - 33(1)
+
+- target: T10
+  from:
+    - 33(2)
+    - 33(3)
+
+- target: T11
+  from:
+    - 33(4)
+
+- target: T12
+  from:
+    - 34(1)
+
+- target: T13
+  from:
+    - 34(2)
+
+- target: T14
+  from:
+    - 34(3)
+
+- target: T15
+  from:
+    - 34(4)
+
