@@ -1,3 +1,5 @@
+import os
+
 import openpyxl
 from yaml_util import get_all_from_columns, load_yaml
 
@@ -117,28 +119,39 @@ def write_data_to_new_sheet(path):
 
 
 if __name__ == '__main__':
-    origin_rows = get_all_rows_without_first('../../../../../待处理分数统计表/初三期末(历史)-九年级1班.xlsx')
-    selected_rows = select_need_column(origin_rows, get_all_from_columns())
-    result_rows = convert_to_target_column(selected_rows, load_yaml())
-    # 按学号排序
-    sorted_list = sorted(result_rows, key=lambda x: x[0])
-    sorted_list.insert(0,sorted_list.pop())
 
-    for r in sorted_list:
-        print(r)
+    folder_path = './待处理分数统计表'
+
+    # 使用 os.listdir() 获取文件夹下的所有文件和子文件夹的名称
+    files_and_folders = os.listdir(folder_path)
+
+    # 过滤出只是文件的项
+    files = [f for f in files_and_folders if os.path.isfile(os.path.join(folder_path, f))]
+    files = sorted(files)
 
     # 创建保存结果的工作表
     workbook = openpyxl.Workbook()
-    sheet = workbook.active
-    sheet.title = '总合分结果'
+    workbook.remove(workbook.active)
+
+    # 打印所有文件的名称
+    for file in files:
+        origin_rows = get_all_rows_without_first(os.path.join(folder_path, file))
+        selected_rows = select_need_column(origin_rows, get_all_from_columns())
+        result_rows = convert_to_target_column(selected_rows, load_yaml())
+        # 按学号排序
+        sorted_list = sorted(result_rows, key=lambda x: x[0])
+        sorted_list.insert(0,sorted_list.pop())
+
+        for r in sorted_list:
+            print(r)
+
+        new_sheet = workbook.create_sheet(title=str(file).split('.')[0].split('-')[1])
+
+
+        # 将数据写入新的工作表
+        for row_data in sorted_list:
+            new_sheet.append(row_data)
 
 
 
-
-    # 示例数据
-    data = sorted_list
-
-    # 将数据写入新的工作表
-    for row_data in data:
-        sheet.append(row_data)
     workbook.save(RESULT_WORKBOOK_NAME)
