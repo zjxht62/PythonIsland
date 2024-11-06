@@ -3,7 +3,27 @@ import os
 import openpyxl
 from yaml_util import get_all_from_columns, load_yaml
 
-RESULT_WORKBOOK_NAME='自动合分结果.xlsx'
+RESULT_WORKBOOK_NAME = '自动合分结果.xlsx'
+
+
+class ScoreStatistics:
+    def __init__(self, workbook_name):
+        self.worksheet = None
+        self.workbook = None
+        self.workbook_name = workbook_name
+
+    def open_read_default_sheet(self):
+        self.workbook = openpyxl.load_workbook(self.workbook_name)
+        self.worksheet = workbook.active
+
+    def get_all_rows_without_first(self):
+        rows_without_first = []
+        for row in self.worksheet.iter_rows(min_row=2, values_only=True):
+            rows_without_first.append(row)
+        self.workbook.close
+        return rows_without_first
+
+
 
 def get_all_rows_without_first(path):
     # 打开一个已存在的工作簿
@@ -20,6 +40,25 @@ def get_all_rows_without_first(path):
     workbook.close()
     return origin_rows
 
+def get_all_rows_without_first_from_all_sheet(path):
+    # 打开一个已存在的工作簿
+    workbook = openpyxl.load_workbook(path)
+
+    all_rows_data = []
+
+    for sheet_name in workbook.sheetnames:
+        sheet = workbook[sheet_name]
+        origin_rows = []
+        for row in sheet.iter_rows(min_row=1, values_only=True):
+            origin_rows.append(row)
+        all_rows_data.append(origin_rows)
+
+    # 关闭工作簿
+    workbook.close()
+    return all_rows_data
+
+
+
 def select_need_column(origin_rows, column_names):
     # 指定要选择的下标位置
     selected_indices = []
@@ -28,6 +67,8 @@ def select_need_column(origin_rows, column_names):
     head_line = origin_rows[0]
     # 根据列名找出要筛选的下标
     for cn in column_names:
+        print(cn)
+        print(head_line)
         index = head_line.index(cn)
         selected_indices.append(index)
     for row in origin_rows:
@@ -36,12 +77,14 @@ def select_need_column(origin_rows, column_names):
     selected_rows_without_none = [r for r in selected_rows if r[0] is not None and r[0] != '-']
     return selected_rows_without_none
 
+
 def convert_to_target_column(origin_rows, column_mapping):
     result_rows = []
     # 添加表头
     result_rows.append(tuple([m['target'] for m in column_mapping]))
     head_line = origin_rows[0]
 
+    # 找到来源列的index
     for m in column_mapping:
         target_column_name = m['target']
         from_column_name_list = m['from']
@@ -49,13 +92,13 @@ def convert_to_target_column(origin_rows, column_mapping):
         for c in from_column_name_list:
             m['from_index'].append(head_line.index(c))
 
-
     for r in origin_rows[1:]:
         # 每个结果行作为list存储
         single_result_row_list = []
         for m in column_mapping:
             value = 0
-            if len(m['from_index']) >1:
+            if len(m['from_index']) > 1:
+                # 处理多个下标的情况，将对应索引的列值相加
                 for i in m['from_index']:
                     if r[i] == '-':
                         value = '-'
@@ -90,6 +133,7 @@ def write_data_to_new_sheet(path):
 
     # 保存工作簿到文件
     workbook.save('example.xlsx')
+
 
 # original_tuple = (1, 2, 3, 4, 5, 6)
 #
@@ -128,6 +172,8 @@ if __name__ == '__main__':
     # 过滤出只是文件的项
     files = [f for f in files_and_folders if os.path.isfile(os.path.join(folder_path, f))]
     files = sorted(files)
+    for file in files:
+        print(file)
 
     # 创建保存结果的工作表
     workbook = openpyxl.Workbook()
@@ -140,18 +186,47 @@ if __name__ == '__main__':
         result_rows = convert_to_target_column(selected_rows, load_yaml())
         # 按学号排序
         sorted_list = sorted(result_rows, key=lambda x: x[0])
-        sorted_list.insert(0,sorted_list.pop())
+        sorted_list.insert(0, sorted_list.pop())
 
         for r in sorted_list:
             print(r)
 
         new_sheet = workbook.create_sheet(title=str(file).split('.')[0].split('-')[1])
 
-
         # 将数据写入新的工作表
         for row_data in sorted_list:
             new_sheet.append(row_data)
 
-
-
     workbook.save(RESULT_WORKBOOK_NAME)
+
+# if __name__ == '__main__':
+#
+#     file_path = './待处理分数统计表/2313_44中179.xlsx'
+#
+#
+#     # 创建保存结果的工作表
+#     workbook = openpyxl.Workbook()
+#     workbook.remove(workbook.active)
+#
+#     all_rows_in_sheets = get_all_rows_without_first_from_all_sheet(file_path)
+#
+#
+#     class_num = 1
+#     for origin_rows in all_rows_in_sheets:
+#         selected_rows = select_need_column(origin_rows, get_all_from_columns())
+#         result_rows = convert_to_target_column(selected_rows, load_yaml())
+#         # 按学号排序
+#         sorted_list = sorted(result_rows, key=lambda x: x[0])
+#         sorted_list.insert(0, sorted_list.pop())
+#
+#         for r in sorted_list:
+#             print(r)
+#
+#         new_sheet = workbook.create_sheet(title=f'{class_num}班')
+#
+#         # 将数据写入新的工作表
+#         for row_data in sorted_list:
+#             new_sheet.append(row_data)
+#         class_num += 1
+#
+#     workbook.save(RESULT_WORKBOOK_NAME)

@@ -1,6 +1,6 @@
-- target: 编号
+- target: 准考证号
   from:
-    - 班内学号
+    - 准考证号
 
 - target: 姓名
   from:
@@ -8,62 +8,60 @@
 
 - target: T1
   from:
-    - 单选题
+    - "1"
+    - "2"
+    - "3"
+    - "4"
 
 - target: T2
   from:
-    - 31(1)
+    - "5"
+    - "6"
+
 
 - target: T3
   from:
-    - 31(2)
+    - "7"
+    - "8"
+    - "9"
+    - "10"
+    - "11"
+
 
 - target: T4
   from:
-    - 31(3)
+    - "12"
+    - "13"
+    - "14"
+    - "15"
+    - "16"
+    - "17"
+    - "18"
+    - "19"
+    - "20"
 
 - target: T5
   from:
-    - 31(4)
+    - "21(1)"
+    - "21(3)"
 
 - target: T6
   from:
-    - 32(1)
+    - "21(2)"
 
 - target: T7
   from:
-    - 32(2)
+    - "22(1)"
 
 - target: T8
   from:
-    - 32(3)
+    - "22(2)"
+    - "22(3)"
 
 - target: T9
   from:
-    - 33(1)
+    - "23"
 
 - target: T10
   from:
-    - 33(2)
-    - 33(3)
-
-- target: T11
-  from:
-    - 33(4)
-
-- target: T12
-  from:
-    - 34(1)
-
-- target: T13
-  from:
-    - 34(2)
-
-- target: T14
-  from:
-    - 34(3)
-
-- target: T15
-  from:
-    - 34(4)
-
+    - "24"

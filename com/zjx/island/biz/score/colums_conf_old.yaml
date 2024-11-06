@@ -1,0 +1,12 @@
+- target: 编号
+  from:
+    - 班内学号
+
+- target: 姓名
+  from:
+    - 姓名
+
+- target: 总分
+  from:
+    - 总分
+
