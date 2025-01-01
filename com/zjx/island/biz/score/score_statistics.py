@@ -135,6 +135,41 @@ def write_data_to_new_sheet(path):
     workbook.save('example.xlsx')
 
 
+# 从第n行开始获取数据
+def get_rows_from_n_start(path, n=1):
+    # 打开一个已存在的工作簿
+    workbook = openpyxl.load_workbook(path)
+
+    # 获取默认的工作表
+    sheet = workbook.active
+
+    rows = []
+    for row in sheet.iter_rows(min_row=n, values_only=True):
+        rows.append(row)
+
+    # 关闭工作簿
+    workbook.close()
+    return rows
+
+# 获取一个工作表所有sheet页的数据，按sheet页排成一个嵌套列表
+def get_all_rows_without_first_from_all_sheet(path):
+    # 打开一个已存在的工作簿
+    workbook = openpyxl.load_workbook(path)
+
+    all_rows_data = []
+
+    for sheet_name in workbook.sheetnames:
+        sheet = workbook[sheet_name]
+        origin_rows = []
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            origin_rows.append(row)
+        all_rows_data.append(origin_rows)
+
+    # 关闭工作簿
+    workbook.close()
+    return all_rows_data
+
+
 # original_tuple = (1, 2, 3, 4, 5, 6)
 #
 # # 指定要选择的下标位置
@@ -171,6 +206,7 @@ if __name__ == '__main__':
 
     # 过滤出只是文件的项
     files = [f for f in files_and_folders if os.path.isfile(os.path.join(folder_path, f))]
+    files = [f for f in files if f.endswith('.xlsx')]
     files = sorted(files)
     for file in files:
         print(file)
@@ -181,6 +217,7 @@ if __name__ == '__main__':
 
     # 打印所有文件的名称
     for file in files:
+        # 首先去掉顶部标题
         origin_rows = get_all_rows_without_first(os.path.join(folder_path, file))
         selected_rows = select_need_column(origin_rows, get_all_from_columns())
         result_rows = convert_to_target_column(selected_rows, load_yaml())
