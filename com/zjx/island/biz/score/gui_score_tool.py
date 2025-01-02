@@ -43,7 +43,7 @@ def update_file_list_display():
 
 def generate_result_files():
     global output_file_path
-    auto_result_file_name = '自动合分结果.xlsx'
+    auto_result_file_name = f'自动合分结果-{selected_subject.name}.xlsx'
 
     if not selected_subject:
         messagebox.showwarning("警告", "没有选择科目！")
@@ -85,7 +85,7 @@ def generate_result_files():
 
 
 def generate_copy_files():
-    auto_to_copy_file_name = '待复制结果.xlsx'
+    auto_to_copy_file_name = f'待复制结果-{selected_subject.name}.xlsx'
     copy_template_file_name = '粘贴结果模板.xlsx'
 
     # 读取模板文件
@@ -95,7 +95,7 @@ def generate_copy_files():
         return
 
     # 结果文件路径
-    auto_result_file = '自动合分结果.xlsx'
+    auto_result_file = f'自动合分结果-{selected_subject.name}.xlsx'
     output_dir = create_results_folder('output_files')
     auto_result_file_path = output_dir / auto_result_file
     auto_to_copy_file_path = output_dir / auto_to_copy_file_name
@@ -164,7 +164,7 @@ def main():
     selected_subject = None
 
     root = tk.Tk()
-    root.title("文件生成工具")
+    root.title("合分小助手")
     root.geometry("500x400")
 
     # 创建下拉选择框（Combobox）
