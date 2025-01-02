@@ -1,0 +1,67 @@
+- target: 准考证号
+  from:
+    - 准考证号
+
+- target: 姓名
+  from:
+    - 姓名
+
+- target: T1
+  from:
+    - "1"
+    - "2"
+    - "3"
+    - "4"
+
+- target: T2
+  from:
+    - "5"
+    - "6"
+
+
+- target: T3
+  from:
+    - "7"
+    - "8"
+    - "9"
+    - "10"
+    - "11"
+
+
+- target: T4
+  from:
+    - "12"
+    - "13"
+    - "14"
+    - "15"
+    - "16"
+    - "17"
+    - "18"
+    - "19"
+    - "20"
+
+- target: T5
+  from:
+    - "21(1)"
+    - "21(3)"
+
+- target: T6
+  from:
+    - "21(2)"
+
+- target: T7
+  from:
+    - "22(1)"
+
+- target: T8
+  from:
+    - "22(2)"
+    - "22(3)"
+
+- target: T9
+  from:
+    - "23"
+
+- target: T10
+  from:
+    - "24"
