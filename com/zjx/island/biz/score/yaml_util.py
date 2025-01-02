@@ -1,8 +1,8 @@
 import yaml
-from path_util import get_config_path
+from com.zjx.island.biz.score.path_util import get_config_path
 def load_yaml(subject):
     print(subject.value)
-    config_path = get_config_path('yaml_confs',f'colums_conf_{subject.value}.yaml')
+    config_path = get_config_path('yaml_confs',f'colums_conf_{subject.name}.yaml')
     with open(config_path) as f:
         return yaml.load(f, Loader=yaml.FullLoader)
 

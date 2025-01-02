@@ -1,5 +1,19 @@
 import sys
 from pathlib import Path
+
+
+def get_executable_dir():
+    """
+    获取当前可执行文件所在的目录
+    """
+    # 获取可执行文件路径
+    if getattr(sys, "frozen", False):  # 检测是否为打包后的环境
+        base_path = Path(sys.executable).resolve().parent
+    else:
+        base_path = Path(__file__).resolve().parent  # 开发环境下使用脚本路径
+    return base_path
+
+
 def get_config_path(subfolder, filename):
     # 获取基路径：打包后使用 _MEIPASS
     if hasattr(sys, "_MEIPASS"):
@@ -16,7 +30,7 @@ def create_results_folder(folder_name="results"):
     在当前运行目录下创建一个文件夹来存储结果文件
     """
     # 获取当前运行目录
-    current_working_dir = Path.cwd()
+    current_working_dir = get_executable_dir()
 
     # 构造结果文件夹路径
     results_folder = current_working_dir / folder_name

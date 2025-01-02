@@ -9,7 +9,7 @@ from pathlib import Path
 
 from com.zjx.island.biz.score.path_util import get_config_path, create_results_folder
 from com.zjx.island.biz.score.yaml_util import load_yaml
-from score_statistics import get_all_from_columns, get_all_rows_without_first_from_all_sheet, \
+from com.zjx.island.biz.score.score_statistics import get_all_from_columns, get_all_rows_without_first_from_all_sheet, \
     get_all_rows_without_first, select_need_column, convert_to_target_column, get_rows_from_n_start
 
 

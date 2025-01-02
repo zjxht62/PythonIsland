@@ -1,7 +1,7 @@
 import os
 
 import openpyxl
-from yaml_util import get_all_from_columns, load_yaml
+from com.zjx.island.biz.score.yaml_util import get_all_from_columns, load_yaml
 
 RESULT_WORKBOOK_NAME = '自动合分结果.xlsx'
 
