@@ -7,7 +7,7 @@ import openpyxl
 from enum import Enum
 from pathlib import Path
 
-from com.zjx.island.biz.score.path_util import get_config_path, create_results_folder
+from com.zjx.island.biz.score.path_util import get_config_path, create_results_folder, get_executable_dir
 from com.zjx.island.biz.score.yaml_util import load_yaml
 from com.zjx.island.biz.score.score_statistics import get_all_from_columns, get_all_rows_without_first_from_all_sheet, \
     get_all_rows_without_first, select_need_column, convert_to_target_column, get_rows_from_n_start
@@ -96,8 +96,12 @@ def generate_copy_files():
 
     # 结果文件路径
     auto_result_file = f'自动合分结果-{selected_subject.name}.xlsx'
+    # output_dir = get_executable_dir() / 'output_files'
     output_dir = create_results_folder('output_files')
     auto_result_file_path = output_dir / auto_result_file
+    if not auto_result_file_path.exists():
+        messagebox.showerror("错误", "无法找到自动合分结果文件，请先生成！")
+        return
     auto_to_copy_file_path = output_dir / auto_to_copy_file_name
 
     # 按照粘贴模板生成结果

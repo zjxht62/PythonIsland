@@ -6,57 +6,59 @@ from com.zjx.island.biz.score.yaml_util import get_all_from_columns, load_yaml
 RESULT_WORKBOOK_NAME = '自动合分结果.xlsx'
 
 
-class ScoreStatistics:
-    def __init__(self, workbook_name):
-        self.worksheet = None
-        self.workbook = None
-        self.workbook_name = workbook_name
-
-    def open_read_default_sheet(self):
-        self.workbook = openpyxl.load_workbook(self.workbook_name)
-        self.worksheet = workbook.active
-
-    def get_all_rows_without_first(self):
-        rows_without_first = []
-        for row in self.worksheet.iter_rows(min_row=2, values_only=True):
-            rows_without_first.append(row)
-        self.workbook.close
-        return rows_without_first
-
+# class ScoreStatistics:
+#     def __init__(self, workbook_name):
+#         self.worksheet = None
+#         self.workbook = None
+#         self.workbook_name = workbook_name
+#
+#     def open_read_default_sheet(self):
+#         self.workbook = openpyxl.load_workbook(self.workbook_name)
+#         self.worksheet = workbook.active
+#
+#     def get_all_rows_without_first(self):
+#         rows_without_first = []
+#         for row in self.worksheet.iter_rows(min_row=2, values_only=True):
+#             rows_without_first.append(row)
+#         self.workbook.close
+#         return rows_without_first
+#
 
 
 def get_all_rows_without_first(path):
-    # 打开一个已存在的工作簿
-    workbook = openpyxl.load_workbook(path)
+    return get_rows_from_n_start(path, n=2)
+    # # 打开一个已存在的工作簿
+    # workbook = openpyxl.load_workbook(path)
+    #
+    # # 获取默认的工作表
+    # sheet = workbook.active
+    #
+    # origin_rows = []
+    # for row in sheet.iter_rows(min_row=2, values_only=True):
+    #     origin_rows.append(row)
+    #
+    # # 关闭工作簿
+    # workbook.close()
+    # return origin_rows
 
-    # 获取默认的工作表
-    sheet = workbook.active
 
-    origin_rows = []
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        origin_rows.append(row)
-
-    # 关闭工作簿
-    workbook.close()
-    return origin_rows
-
-def get_all_rows_without_first_from_all_sheet(path):
-    # 打开一个已存在的工作簿
-    workbook = openpyxl.load_workbook(path)
-
-    all_rows_data = []
-
-    for sheet_name in workbook.sheetnames:
-        sheet = workbook[sheet_name]
-        origin_rows = []
-        for row in sheet.iter_rows(min_row=1, values_only=True):
-            origin_rows.append(row)
-        all_rows_data.append(origin_rows)
-
-    # 关闭工作簿
-    workbook.close()
-    return all_rows_data
-
+# def get_all_rows_without_first_from_all_sheet(path):
+#     # 打开一个已存在的工作簿
+#     workbook = openpyxl.load_workbook(path)
+#
+#     all_rows_data = []
+#
+#     for sheet_name in workbook.sheetnames:
+#         sheet = workbook[sheet_name]
+#         # origin_rows = []
+#         # for row in sheet.iter_rows(min_row=1, values_only=True):
+#         #     origin_rows.append(row)
+#         origin_rows = get_rows_from_n_start(path, 1)
+#         all_rows_data.append(origin_rows)
+#
+#     # 关闭工作簿
+#     workbook.close()
+#     return all_rows_data
 
 
 def select_need_column(origin_rows, column_names):
@@ -112,27 +114,27 @@ def convert_to_target_column(origin_rows, column_mapping):
     return result_rows
 
 
-def write_data_to_new_sheet(path):
-    # 创建一个新的工作簿
-    workbook = openpyxl.load_workbook(path)
-
-    # 创建一个新的工作表（sheet）
-    new_sheet = workbook.create_sheet(title='NewSheet')
-
-    # 示例数据
-    data = [
-        ['Name', 'Age', 'City'],
-        ['John', 25, 'New York'],
-        ['Alice', 30, 'London'],
-        ['Bob', 22, 'Tokyo']
-    ]
-
-    # 将数据写入新的工作表
-    for row_data in data:
-        new_sheet.append(row_data)
-
-    # 保存工作簿到文件
-    workbook.save('example.xlsx')
+# def write_data_to_new_sheet(path):
+#     # 创建一个新的工作簿
+#     workbook = openpyxl.load_workbook(path)
+#
+#     # 创建一个新的工作表（sheet）
+#     new_sheet = workbook.create_sheet(title='NewSheet')
+#
+#     # 示例数据
+#     data = [
+#         ['Name', 'Age', 'City'],
+#         ['John', 25, 'New York'],
+#         ['Alice', 30, 'London'],
+#         ['Bob', 22, 'Tokyo']
+#     ]
+#
+#     # 将数据写入新的工作表
+#     for row_data in data:
+#         new_sheet.append(row_data)
+#
+#     # 保存工作簿到文件
+#     workbook.save('example.xlsx')
 
 
 # 从第n行开始获取数据
@@ -150,6 +152,7 @@ def get_rows_from_n_start(path, n=1):
     # 关闭工作簿
     workbook.close()
     return rows
+
 
 # 获取一个工作表所有sheet页的数据，按sheet页排成一个嵌套列表
 def get_all_rows_without_first_from_all_sheet(path):
