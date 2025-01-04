@@ -54,7 +54,7 @@ def generate_result_files():
         return
 
     # 创建输出文件目录
-    output_dir = create_results_folder('output_files')
+    # output_dir = create_results_folder('output_files')
     output_file_path = output_dir / auto_result_file_name
 
     workbook = openpyxl.Workbook()
@@ -97,7 +97,7 @@ def generate_copy_files():
     # 结果文件路径
     auto_result_file = f'自动合分结果-{selected_subject.name}.xlsx'
     # output_dir = get_executable_dir() / 'output_files'
-    output_dir = create_results_folder('output_files')
+    # output_dir = create_results_folder('output_files')
     auto_result_file_path = output_dir / auto_result_file
     if not auto_result_file_path.exists():
         messagebox.showerror("错误", "无法找到自动合分结果文件，请先生成！")
@@ -163,7 +163,8 @@ def on_combobox_select(event):
 
 
 def main():
-    global file_list_display, selected_files, combobox, selected_subject
+    global file_list_display, selected_files, combobox, selected_subject,output_dir
+    output_dir = create_results_folder('output_files')
     selected_files = []
     selected_subject = None
 
