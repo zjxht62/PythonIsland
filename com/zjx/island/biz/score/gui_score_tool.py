@@ -1,16 +1,52 @@
+import logging
 import os
 import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import shutil
+from tkinter.scrolledtext import ScrolledText
+
 import openpyxl
 from enum import Enum
 from pathlib import Path
 
-from com.zjx.island.biz.score.path_util import get_config_path, create_results_folder, get_executable_dir
+from com.zjx.island.biz.score.path_util import get_config_path, create_results_folder
 from com.zjx.island.biz.score.yaml_util import load_yaml
 from com.zjx.island.biz.score.score_statistics import get_all_from_columns, get_all_rows_without_first_from_all_sheet, \
     get_all_rows_without_first, select_need_column, convert_to_target_column, get_rows_from_n_start
+
+output_dir = create_results_folder('output_files')
+
+class StreamToLogger:
+    def __init__(self, logger, log_level):
+        self.logger = logger
+        self.log_level = log_level
+        self.linebuf = ""
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            self.logger.log(self.log_level, line)
+
+    def flush(self):
+        pass
+
+def setup_logging():
+    log_file = "app.log"  # 日志文件名
+    log_path = output_dir /log_file  # 获取日志文件的完整路径
+    logging.basicConfig(
+        level=logging.INFO,  # 设置日志级别
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.FileHandler(log_path, mode='a', encoding='utf-8'),  # 日志输出到文件
+            logging.StreamHandler(sys.stdout)  # 日志同时输出到控制台
+        ]
+    )
+    logger = logging.getLogger("ConsoleLogger")
+
+    # 重定向 sys.stdout 和 sys.stderr
+    sys.stdout = StreamToLogger(logger, logging.INFO)
+    sys.stderr = StreamToLogger(logger, logging.ERROR)
+
 
 
 class Subject(Enum):
@@ -42,7 +78,6 @@ def update_file_list_display():
 
 
 def generate_result_files():
-    global output_file_path
     auto_result_file_name = f'自动合分结果-{selected_subject.name}.xlsx'
 
     if not selected_subject:
@@ -55,7 +90,7 @@ def generate_result_files():
 
     # 创建输出文件目录
     # output_dir = create_results_folder('output_files')
-    output_file_path = output_dir / auto_result_file_name
+    result_file_path = output_dir / auto_result_file_name
 
     workbook = openpyxl.Workbook()
     workbook.remove(workbook.active)
@@ -71,7 +106,7 @@ def generate_result_files():
         sorted_list.insert(0, sorted_list.pop())
 
         for r in sorted_list:
-            print(r)
+            logging.info(r)
 
         new_sheet = workbook.create_sheet(title=str(file).split('.')[0].split('-')[1])
 
@@ -79,9 +114,9 @@ def generate_result_files():
         for row_data in sorted_list:
             new_sheet.append(row_data)
 
-    workbook.save(output_file_path)
+    workbook.save(result_file_path)
 
-    messagebox.showinfo("成功", f"生成了新文件:{output_file_path.name}，保存在 output_files 目录下")
+    messagebox.showinfo("成功", f"生成了新文件:{result_file_path.name}，保存在{result_file_path.parent}目录下")
 
 
 def generate_copy_files():
@@ -133,7 +168,7 @@ def generate_copy_files():
 
     workbook.save(auto_to_copy_file_path)
 
-    messagebox.showinfo("成功", f"生成了新文件:{auto_to_copy_file_path.name}，保存在 output_files 目录下")
+    messagebox.showinfo("成功", f"生成了新文件:{auto_to_copy_file_path.name}，保存在{auto_to_copy_file_path.parent}目录下")
 
 
 
@@ -159,12 +194,14 @@ def on_combobox_select(event):
         selected_subject = Subject.DILI
     elif selected_value == '政治':
         selected_subject = Subject.ZHENGZHI
-    print(f"选中的值: {selected_subject}")
+    logging.info(f"选中的值: {selected_subject}")
+
 
 
 def main():
-    global file_list_display, selected_files, combobox, selected_subject,output_dir
-    output_dir = create_results_folder('output_files')
+    # global file_list_display, selected_files, combobox, selected_subject,output_dir
+    global file_list_display, selected_files, combobox, selected_subject
+    # output_dir = create_results_folder('output_files')
     selected_files = []
     selected_subject = None
 
@@ -195,4 +232,5 @@ def main():
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()
