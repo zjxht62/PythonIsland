@@ -69,8 +69,8 @@ def select_need_column(origin_rows, column_names):
     head_line = origin_rows[0]
     # 根据列名找出要筛选的下标
     for cn in column_names:
-        print(cn)
-        print(head_line)
+        # print(cn)
+        # print(head_line)
         index = head_line.index(cn)
         selected_indices.append(index)
     for row in origin_rows:

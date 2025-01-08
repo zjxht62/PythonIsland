@@ -103,11 +103,12 @@ def generate_result_files():
 
     workbook = openpyxl.Workbook()
     workbook.remove(workbook.active)
+    print(f'开始生成自动合分结果文件...')
 
     for file in selected_score_files:
         file_path = Path(file)
         file_name_without_suffix = file_path.stem
-        print(file_name_without_suffix)
+        print(f'当前读取的文件：{file_name_without_suffix}')
 
         # 首先去掉顶部标题
         origin_rows = get_all_rows_without_first(file)
@@ -118,7 +119,7 @@ def generate_result_files():
         sorted_list.insert(0, sorted_list.pop())
 
         for r in sorted_list:
-            print(r)
+            print(f'处理后的行：{r}')
 
 
         # new_sheet = workbook.create_sheet(title=str(file).split('.')[0].split('-')[1])
@@ -130,8 +131,8 @@ def generate_result_files():
             new_sheet.append(row_data)
 
     workbook.save(result_file_path)
-
-    messagebox.showinfo("成功", f"生成了新文件:{result_file_path.name}，保存在{result_file_path.parent}目录下")
+    print(f"自动合分结果文件生成成功：保存在{result_file_path.parent}目录下")
+    messagebox.showinfo("成功", f"生成了新文件：{result_file_path.name}，保存在{result_file_path.parent}目录下")
 
 
 def generate_copy_files():
@@ -159,6 +160,8 @@ def generate_copy_files():
         return
     auto_to_copy_file_path = output_dir / auto_to_copy_file_name
 
+    print('开始生成可复制文件...')
+
     # 按照粘贴模板生成结果
     head_rows = get_rows_from_n_start(template_file)
 
@@ -170,12 +173,6 @@ def generate_copy_files():
 
     for m in head_rows:
         for r in all_auto_result_rows:
-            # if r[1] in m:
-            #     print(m+r)
-            #     head_rows.remove(m)
-            #     all_auto_result_rows.remove(r)
-            # else:
-            #     print(m)
             if m[1] == r[1]:
                 output_rows.append(m + r)
 
@@ -187,9 +184,10 @@ def generate_copy_files():
         new_sheet.append(r)
 
     workbook.save(auto_to_copy_file_path)
+    print(f"可复制文件生成成功：保存在{auto_to_copy_file_path.parent}目录下")
 
     messagebox.showinfo("成功",
-                        f"生成了新文件:{auto_to_copy_file_path.name}，保存在{auto_to_copy_file_path.parent}目录下")
+                        f"生成了新文件：{auto_to_copy_file_path.name}，保存在{auto_to_copy_file_path.parent}目录下")
 
 
 def on_combobox_select(event):
@@ -215,7 +213,7 @@ def on_combobox_select(event):
     elif selected_value == '政治':
         selected_subject = Subject.ZHENGZHI
     # logging.info(f"选中的值: {selected_subject}")
-    print(f"选中的值: {selected_subject}")
+    print(f"选中的值：{selected_subject}")
 
 
 def main():
@@ -255,7 +253,7 @@ def main():
     generate_button = tk.Button(root, text="生成合分结果文件", command=generate_result_files)
     generate_button.grid(row=4, column=0, padx=20, pady=10, sticky=tk.E)
 
-    copy_button = tk.Button(root, text="生成可粘贴文件", command=generate_copy_files)
+    copy_button = tk.Button(root, text="生成可复制文件", command=generate_copy_files)
     copy_button.grid(row=4, column=1, padx=20, pady=10, sticky=tk.W)
 
     # 创建带滚动条的文本框
