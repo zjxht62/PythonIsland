@@ -16,37 +16,26 @@ from com.zjx.island.biz.score.score_statistics import get_all_from_columns, get_
     get_all_rows_without_first, select_need_column, convert_to_target_column, get_rows_from_n_start
 
 output_dir = create_results_folder('output_files')
+selected_template_path = None
+selected_subject = None
+selected_score_files = []
+auto_result_file_name = ''
 
-class StreamToLogger:
-    def __init__(self, logger, log_level):
-        self.logger = logger
-        self.log_level = log_level
-        self.linebuf = ""
 
-    def write(self, buf):
-        for line in buf.rstrip().splitlines():
-            self.logger.log(self.log_level, line)
+class PrintRedirector:
+    """重定向标准输出到 Tkinter 的 Text 控件"""
+
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
+
+    def write(self, message):
+        self.text_widget.config(state=tk.NORMAL)  # 解锁控件，允许写入
+        self.text_widget.insert(tk.END, message)  # 插入内容
+        self.text_widget.config(state=tk.DISABLED)  # 禁止编辑
+        self.text_widget.see(tk.END)  # 自动滚动到最新内容
 
     def flush(self):
-        pass
-
-def setup_logging():
-    log_file = "app.log"  # 日志文件名
-    log_path = output_dir /log_file  # 获取日志文件的完整路径
-    logging.basicConfig(
-        level=logging.INFO,  # 设置日志级别
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.FileHandler(log_path, mode='a', encoding='utf-8'),  # 日志输出到文件
-            logging.StreamHandler(sys.stdout)  # 日志同时输出到控制台
-        ]
-    )
-    logger = logging.getLogger("ConsoleLogger")
-
-    # 重定向 sys.stdout 和 sys.stderr
-    sys.stdout = StreamToLogger(logger, logging.INFO)
-    sys.stderr = StreamToLogger(logger, logging.ERROR)
-
+        pass  # 必须实现 flush 方法以符合标准输出的要求
 
 
 class Subject(Enum):
@@ -61,32 +50,52 @@ class Subject(Enum):
     ZHENGZHI = 9
 
 
-def select_files():
+def select_score_files():
     files = filedialog.askopenfilenames(title="选择多个文件")
     if files:
-        selected_files.clear()
-        selected_files.extend(files)
+        selected_score_files.clear()
+        selected_score_files.extend(files)
         update_file_list_display()
     else:
         messagebox.showwarning("警告", "请至少选择一个文件！")
 
 
+def select_template_file():
+    global selected_template_path
+    # 打开文件选择对话框
+    file_path = filedialog.askopenfilename()
+    if file_path:
+        selected_template_path = Path(file_path)
+        # 如果路径太长，只显示末尾部分并添加省略号
+        if len(file_path) > 50:  # 假设最大显示宽度为 50 字符
+            display_text = f"...{file_path[-50:]}"
+        else:
+            display_text = file_path
+        template_file_label.config(text=display_text)
+    else:
+        # 如果未选择文件，显示默认提示
+        template_file_label.config(text="未选择文件")
+        selected_template_path = None
+
+
 def update_file_list_display():
-    file_list_display.delete(1.0, tk.END)
-    for file in selected_files:
-        file_list_display.insert(tk.END, file + "\n")
+    score_file_list_display.delete(1.0, tk.END)
+    for file in selected_score_files:
+        score_file_list_display.insert(tk.END, file + "\n")
 
 
 def generate_result_files():
-    auto_result_file_name = f'自动合分结果-{selected_subject.name}.xlsx'
-
+    global auto_result_file_name
     if not selected_subject:
         messagebox.showwarning("警告", "没有选择科目！")
         return
 
-    if not selected_files:
+    if not selected_score_files:
         messagebox.showwarning("警告", "没有选择文件！")
         return
+
+    auto_result_file_name = f'自动合分结果-{selected_subject.name}.xlsx'
+
 
     # 创建输出文件目录
     # output_dir = create_results_folder('output_files')
@@ -95,7 +104,10 @@ def generate_result_files():
     workbook = openpyxl.Workbook()
     workbook.remove(workbook.active)
 
-    for file in selected_files:
+    for file in selected_score_files:
+        file_path = Path(file)
+        file_name_without_suffix = file_path.stem
+        print(file_name_without_suffix)
 
         # 首先去掉顶部标题
         origin_rows = get_all_rows_without_first(file)
@@ -106,9 +118,12 @@ def generate_result_files():
         sorted_list.insert(0, sorted_list.pop())
 
         for r in sorted_list:
-            logging.info(r)
+            print(r)
 
-        new_sheet = workbook.create_sheet(title=str(file).split('.')[0].split('-')[1])
+
+        # new_sheet = workbook.create_sheet(title=str(file).split('.')[0].split('-')[1])
+        # 选择文件名作为sheet页名称
+        new_sheet = workbook.create_sheet(title=file_name_without_suffix)
 
         # 将数据写入新的工作表
         for row_data in sorted_list:
@@ -120,20 +135,25 @@ def generate_result_files():
 
 
 def generate_copy_files():
-    auto_to_copy_file_name = f'待复制结果-{selected_subject.name}.xlsx'
-    copy_template_file_name = '粘贴结果模板.xlsx'
+    if not selected_subject:
+        messagebox.showwarning("警告", "没有选择科目！")
+        return
 
-    # 读取模板文件
-    template_file = get_config_path('templates', copy_template_file_name)  # 假设模板文件为 template.txt
-    if not template_file.exists():
+    if not selected_template_path or not selected_template_path.exists():
         messagebox.showerror("错误", "模板文件不存在！")
         return
 
+    auto_to_copy_file_name = f'待复制结果-{selected_subject.name}.xlsx'
+    # 读取模板文件
+    # template_file = get_config_path('templates', copy_template_file_name)  # 假设模板文件为 template.txt
+    template_file = selected_template_path  # 假设模板文件为 template.txt
+
+
     # 结果文件路径
-    auto_result_file = f'自动合分结果-{selected_subject.name}.xlsx'
+    # auto_result_file = f'自动合分结果-{selected_subject.name}.xlsx'
     # output_dir = get_executable_dir() / 'output_files'
     # output_dir = create_results_folder('output_files')
-    auto_result_file_path = output_dir / auto_result_file
+    auto_result_file_path = output_dir / auto_result_file_name
     if not auto_result_file_path.exists():
         messagebox.showerror("错误", "无法找到自动合分结果文件，请先生成！")
         return
@@ -168,8 +188,8 @@ def generate_copy_files():
 
     workbook.save(auto_to_copy_file_path)
 
-    messagebox.showinfo("成功", f"生成了新文件:{auto_to_copy_file_path.name}，保存在{auto_to_copy_file_path.parent}目录下")
-
+    messagebox.showinfo("成功",
+                        f"生成了新文件:{auto_to_copy_file_path.name}，保存在{auto_to_copy_file_path.parent}目录下")
 
 
 def on_combobox_select(event):
@@ -194,43 +214,61 @@ def on_combobox_select(event):
         selected_subject = Subject.DILI
     elif selected_value == '政治':
         selected_subject = Subject.ZHENGZHI
-    logging.info(f"选中的值: {selected_subject}")
-
+    # logging.info(f"选中的值: {selected_subject}")
+    print(f"选中的值: {selected_subject}")
 
 
 def main():
-    # global file_list_display, selected_files, combobox, selected_subject,output_dir
-    global file_list_display, selected_files, combobox, selected_subject
+    global score_file_list_display, selected_score_files, combobox, selected_subject, template_file_label, \
+        selected_template_path
     # output_dir = create_results_folder('output_files')
-    selected_files = []
-    selected_subject = None
 
     root = tk.Tk()
     root.title("合分小助手")
-    root.geometry("500x400")
+    root.geometry("800x600")
+
+    # 配置列权重以支持居中对齐
+    root.grid_columnconfigure(0, weight=1)
+    root.grid_columnconfigure(1, weight=1)
 
     # 创建下拉选择框（Combobox）
     options = ["语文", "数学", "英语", "物理", "化学", "生物", "历史", "地理", "生物"]
     combobox = ttk.Combobox(root, values=options)
     combobox.set("请选择学科")  # 设置默认提示文字
     combobox.bind("<<ComboboxSelected>>", on_combobox_select)
-    combobox.pack(pady=20)
+    combobox.grid(row=0, column=0, columnspan=2, padx=20, pady=10, sticky=tk.NSEW)  # 跨两列居中
 
-    select_button = tk.Button(root, text="选择文件", command=select_files)
-    select_button.pack(pady=10)
+    # 模板文件选择
+    select_template_file_button = tk.Button(root, text="选择模板文件", command=select_template_file)
+    select_template_file_button.grid(row=1, column=0, padx=20, pady=10)
+
+    # 创建一个标签，用于显示选中文件的路径
+    template_file_label = tk.Label(root, text="未选择文件", width=60, anchor="w")  # 固定宽度和左对齐
+    template_file_label.grid(row=1, column=1, padx=20, pady=10, sticky=tk.W)
+
+    # 原始分数文件选择
+    select_score_files_button = tk.Button(root, text="选择原始分数文件", command=select_score_files)
+    select_score_files_button.grid(row=2, column=0, padx=20, pady=10)
+    score_file_list_display = tk.Text(root, height=10, width=60)
+    score_file_list_display.grid(row=3, column=0, columnspan=2, padx=20, pady=10, sticky=tk.NSEW)  # 跨两列居中
 
     generate_button = tk.Button(root, text="生成合分结果文件", command=generate_result_files)
-    generate_button.pack(pady=10)
+    generate_button.grid(row=4, column=0, padx=20, pady=10, sticky=tk.E)
 
-    generate_button = tk.Button(root, text="生成可粘贴文件", command=generate_copy_files)
-    generate_button.pack(pady=10)
+    copy_button = tk.Button(root, text="生成可粘贴文件", command=generate_copy_files)
+    copy_button.grid(row=4, column=1, padx=20, pady=10, sticky=tk.W)
 
-    file_list_display = tk.Text(root, height=15, width=60)
-    file_list_display.pack(pady=10)
+    # 创建带滚动条的文本框
+    log_display = ScrolledText(root, width=60, height=10)
+    log_display.grid(row=5, column=0, columnspan=2, padx=20, pady=10, sticky=tk.NSEW)
+
+    # 重定向标准输出到文本框
+    sys.stdout = PrintRedirector(log_display)
+    sys.stderr = PrintRedirector(log_display)
 
     root.mainloop()
 
 
 if __name__ == "__main__":
-    setup_logging()
+    # 打开文件并重定向输出
     main()
