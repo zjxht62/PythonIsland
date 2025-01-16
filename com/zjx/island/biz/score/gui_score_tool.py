@@ -111,7 +111,9 @@ def generate_result_files():
         print(f'当前读取的文件：{file_name_without_suffix}')
 
         # 首先去掉顶部标题
-        origin_rows = get_all_rows_without_first(file)
+        # origin_rows = get_all_rows_without_first(file)
+        # 高一上学期期末，无表头
+        origin_rows = get_rows_from_n_start(file)
         selected_rows = select_need_column(origin_rows, get_all_from_columns(selected_subject))
         result_rows = convert_to_target_column(selected_rows, load_yaml(selected_subject))
         # 按学号排序
@@ -171,17 +173,37 @@ def generate_copy_files():
     for r in get_all_rows_without_first_from_all_sheet(auto_result_file_path):
         all_auto_result_rows += r
 
+
     for m in head_rows:
         for r in all_auto_result_rows:
             if m[1] == r[1]:
                 output_rows.append(m + r)
+                break
+        else:
+            print(f"未找到学生{m[1]}")
+            output_rows.append(m + ('-',))
+
+    print(len(output_rows))
+    for r in output_rows:
+        print(r)
+
+
+
+
 
     # 创建保存结果的工作表
     workbook = openpyxl.Workbook()
     workbook.remove(workbook.active)
     new_sheet = workbook.create_sheet('待复制')
-    for r in output_rows:
-        new_sheet.append(r)
+    # for r in output_rows:
+    #     new_sheet.append(r)
+    # 找出最长行的长度
+    max_len = max(len(row) for row in output_rows)
+    # 补全数据
+    for row in output_rows:
+        row = list(row)
+        row += [None] * (max_len - len(row))  # 填充 None
+        new_sheet.append(row)
 
     workbook.save(auto_to_copy_file_path)
     print(f"可复制文件生成成功：保存在{auto_to_copy_file_path.parent}目录下")
@@ -261,8 +283,8 @@ def main():
     log_display.grid(row=5, column=0, columnspan=2, padx=20, pady=10, sticky=tk.NSEW)
 
     # 重定向标准输出到文本框
-    sys.stdout = PrintRedirector(log_display)
-    sys.stderr = PrintRedirector(log_display)
+    # sys.stdout = PrintRedirector(log_display)
+    # sys.stderr = PrintRedirector(log_display)
 
     root.mainloop()
 
